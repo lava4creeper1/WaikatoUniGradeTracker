@@ -15,18 +15,14 @@ def drawMainGUI(colourFile):
 
         root.destroy()
     
-    # Extract list of colours from passed file for drawing gui
-    with open(colourFile) as file:
-        colours = file.readlines()
-        for colour in range(len(colours)):
-            colours[colour] = colours[colour].strip("\n")
+    colours = extractColours(colourFile)
 
     # Create tkinter window
     root = tk.Tk()
     root.configure(background=colours[0])
 
     # Create label to be title for window
-    title = tk.Label(root, text="Hello World!", padx=20, pady=20, background=colours[0], foreground=colours[4])
+    title = tk.Label(root, text="Enter a classname in the format 'ENGEN101-24A'", padx=20, pady=20, background=colours[0], foreground=colours[4])
     title.grid(row=0, column=0)
 
     linkVars = []
@@ -48,5 +44,104 @@ def drawMainGUI(colourFile):
 
     return returnValues
 
+# Takes file of colour codes and extracts into a list
+def extractColours(colourFile):
+
+    # Extract list of colours from passed file for drawing gui
+    with open(colourFile) as file:
+        colours = file.readlines()
+        for colour in range(len(colours)):
+            colours[colour] = colours[colour].strip("\n")
+
+    return colours
+
+# Takes html of assessment table from course outline and puts it in a tkinter window
+def drawAssessmentTable(colourFile, html):
+
+    colours = extractColours(colourFile)
+
+    # create tkinter window
+    root = tk.Tk()
+    root.configure(background=colours[0])
+
+    # turn html into a single string with indentation removed
+    for i in range(len(html)):
+        html[i] = html[i].strip()
+    html = "".join(html)
+
+    row = 0
+    column = 0
+    foundEntry = False
+    entryStarted = False
+    entryString = ""
+    subtags = 0
+    colspan = 1
+    
+    # iterate through every character in html
+    for i in range(len(html)):
+
+        # if <td> or <th> tag has been opened but not closed
+        if foundEntry and not entryStarted:
+
+            # check for colspan parameter
+            if html[i:i+8] == "colspan=":
+                colspan = int(html[i+10])
+
+            # check for closing of tag
+            if html[i] == ">":
+                entryStarted = True
+                continue
+
+        # if in text portion of entry
+        if entryStarted:
+
+            # check for closing tag
+            if html[i:i+4] == "</td" or html[i:i+4] == "</th":
+
+                # populate table with entry
+                entryLabel = tk.Label(root, text=entryString, bg=colours[0])
+                entryLabel.grid(row=row, column=column, columnspan=colspan)
+                column += colspan
+                colspan = 1
+
+                # reset variables
+                entryString = ""
+                foundEntry = False
+                entryStarted = False
+
+                continue
+            
+            # if tag opened inside of text section (for example, <em>) TODO: sense and bold/italicise appropriately
+            if html[i] == "<":
+                subtags += 1
+
+            # if tag inside of text section closed
+            if html[i] == ">":
+                subtags -= 1
+                continue
+
+            # add character to text string unless inside of extra tag
+            if subtags == 0:
+                entryString = entryString + html[i]
+
+        # if new table row is created
+        if html[i:i+3] == "<tr":
+            column = 0
+            row += 1
+
+        # if new data intry is found
+        if html[i:i+3] == "<td" or html[i:i+3] == "<th":
+            foundEntry = True
+
+
+    tk.mainloop()
+
 if __name__ == "__main__":
-    drawMainGUI("colours.txt")
+    from webScraping import getHTML
+    from htmlParsing import getAssessmentTable
+    
+    # Pass default value of ENGEN101-24A for testing purposes
+    html = getHTML("https://uow-func-net-currmngmt-offmngmt-aue-prod.azurewebsites.net/api/outline/view/ENGEN101-24A%20%28HAM%29")
+    table = getAssessmentTable(html)
+
+    drawAssessmentTable("colours.txt", table)

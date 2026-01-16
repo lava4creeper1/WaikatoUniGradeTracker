@@ -19,5 +19,6 @@ for className in classNames:
     # Get only portion of html with assessment table
     tableHTML = getAssessmentTable(html)
 
-    for i in tableHTML:
-        print(i)
+    # Create GUI displaying assessments table  
+    drawAssessmentTable(coloursFile, tableHTML)
+
