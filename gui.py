@@ -1,7 +1,7 @@
 import tkinter as tk
 
 returnValues = []
-numFields = 1
+numFields = 2
 
 # Draws main GUI for class submission page
 # returns string
@@ -56,7 +56,7 @@ def extractColours(colourFile):
     return colours
 
 # Takes html of assessment table from course outline and puts it in a tkinter window
-def drawAssessmentTable(colourFile, html):
+def drawAssessmentTable(colourFile, htmls):
 
     colours = extractColours(colourFile)
 
@@ -64,74 +64,86 @@ def drawAssessmentTable(colourFile, html):
     root = tk.Tk()
     root.configure(background=colours[0])
 
-    # turn html into a single string with indentation removed
-    for i in range(len(html)):
-        html[i] = html[i].strip()
-    html = "".join(html)
-
-    row = 0
     column = 0
-    foundEntry = False
-    entryStarted = False
-    entryString = ""
-    subtags = 0
-    colspan = 1
-    
-    # iterate through every character in html
-    for i in range(len(html)):
 
-        # if <td> or <th> tag has been opened but not closed
-        if foundEntry and not entryStarted:
+    for item in htmls:
 
-            # check for colspan parameter
-            if html[i:i+8] == "colspan=":
-                colspan = int(html[i+10])
+        frame = tk.Frame(root, bg=colours[0])
+        frame.grid(row=1, column=column)
 
-            # check for closing of tag
-            if html[i] == ">":
-                entryStarted = True
-                continue
+        html = item
+        print(type(html))
 
-        # if in text portion of entry
-        if entryStarted:
+        # turn html into a single string with indentation removed
+        for i in range(len(html)):
+            html[i] = html[i].strip()
+        html = "".join(html)
 
-            # check for closing tag
-            if html[i:i+4] == "</td" or html[i:i+4] == "</th":
+        row = -1
+        subColumn = 0
+        foundEntry = False
+        entryStarted = False
+        entryString = ""
+        subtags = 0
+        colspan = 1
+        
+        # iterate through every character in html
+        for i in range(len(html)):
 
-                # populate table with entry
-                entryLabel = tk.Label(root, text=entryString, bg=colours[0])
-                entryLabel.grid(row=row, column=column, columnspan=colspan)
-                column += colspan
-                colspan = 1
+            # if <td> or <th> tag has been opened but not closed
+            if foundEntry and not entryStarted:
 
-                # reset variables
-                entryString = ""
-                foundEntry = False
-                entryStarted = False
+                # check for colspan parameter
+                if html[i:i+8] == "colspan=":
+                    colspan = int(html[i+10])
 
-                continue
-            
-            # if tag opened inside of text section (for example, <em>) TODO: sense and bold/italicise appropriately
-            if html[i] == "<":
-                subtags += 1
+                # check for closing of tag
+                if html[i] == ">":
+                    entryStarted = True
+                    continue
 
-            # if tag inside of text section closed
-            if html[i] == ">":
-                subtags -= 1
-                continue
+            # if in text portion of entry
+            if entryStarted:
 
-            # add character to text string unless inside of extra tag
-            if subtags == 0:
-                entryString = entryString + html[i]
+                # check for closing tag
+                if html[i:i+4] == "</td" or html[i:i+4] == "</th":
 
-        # if new table row is created
-        if html[i:i+3] == "<tr":
-            column = 0
-            row += 1
+                    # populate table with entry
+                    entryLabel = tk.Label(frame, text=entryString, bg=colours[0])
+                    entryLabel.grid(row=row, column=subColumn, columnspan=colspan)
+                    subColumn += colspan
+                    colspan = 1
 
-        # if new data intry is found
-        if html[i:i+3] == "<td" or html[i:i+3] == "<th":
-            foundEntry = True
+                    # reset variables
+                    entryString = ""
+                    foundEntry = False
+                    entryStarted = False
+
+                    continue
+                
+                # if tag opened inside of text section (for example, <em>) TODO: sense and bold/italicise appropriately
+                if html[i] == "<":
+                    subtags += 1
+
+                # if tag inside of text section closed
+                if html[i] == ">":
+                    subtags -= 1
+                    continue
+
+                # add character to text string unless inside of extra tag
+                if subtags == 0:
+                    entryString = entryString + html[i]
+
+            # if new table row is created
+            if html[i:i+3] == "<tr":
+                subColumn = 0
+                row += 1
+
+            # if new data intry is found
+            if html[i:i+3] == "<td" or html[i:i+3] == "<th":
+                foundEntry = True
+        
+        column += 1
 
 
     tk.mainloop()
@@ -144,4 +156,4 @@ if __name__ == "__main__":
     html = getHTML("https://uow-func-net-currmngmt-offmngmt-aue-prod.azurewebsites.net/api/outline/view/ENGEN101-24A%20%28HAM%29")
     table = getAssessmentTable(html)
 
-    drawAssessmentTable("colours.txt", table)
+    drawAssessmentTable("colours.txt", [table])

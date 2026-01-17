@@ -8,6 +8,8 @@ urlFormat = "https://uow-func-net-currmngmt-offmngmt-aue-prod.azurewebsites.net/
 # Get classname list in format ENGEN101-26A
 classNames = drawMainGUI(coloursFile)
 
+tableHTMLs = []
+
 # Iterate through classnames 
 for className in classNames:
     # Put classname into url format to find url for specific classes course outline
@@ -17,8 +19,8 @@ for className in classNames:
     html = getHTML(url)
 
     # Get only portion of html with assessment table
-    tableHTML = getAssessmentTable(html)
+    tableHTMLs.append(getAssessmentTable(html))
 
-    # Create GUI displaying assessments table  
-    drawAssessmentTable(coloursFile, tableHTML)
+# Create GUI displaying assessments table  
+drawAssessmentTable(coloursFile, tableHTMLs)
 
