@@ -20,6 +20,8 @@ class Paper:
 
             elif firstFound:
                 tempList.append(i)
+        
+        self.categories.append(Category(tempName, tempPercentage, tempList))
 
 class Category:
     def __init__(self, name, percentage, assessments):

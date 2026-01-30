@@ -56,104 +56,56 @@ def extractColours(colourFile):
     return colours
 
 # Takes html of assessment table from course outline and puts it in a tkinter window
-def drawAssessmentTable(colourFile, htmls):
+def drawAssessmentTable(colourFile, papers):
 
     colours = extractColours(colourFile)
 
-    # create tkinter window
-    root = tk.Tk()
-    root.configure(background=colours[0])
+    for paper in papers:
 
-    column = 0
+        # create tkinter window
+        root = tk.Tk()
+        root.configure(background=colours[0])
+        root.title(paper.name)
 
-    for item in htmls:
+        row = 0
 
-        frame = tk.Frame(root, bg=colours[0])
-        frame.grid(row=1, column=column)
 
-        html = item
-        print(type(html))
+        for category in paper.categories:
+            heading = tk.Label(root, text=category.name, bg=colours[0])
+            heading.grid(row=row, column=0)
 
-        # turn html into a single string with indentation removed
-        for i in range(len(html)):
-            html[i] = html[i].strip()
-        html = "".join(html)
+            percentage = tk.Label(root, text=category.percentage, bg=colours[0])
+            percentage.grid(row = row, column=2)
+            row += 1
 
-        row = -1
-        subColumn = 0
-        foundEntry = False
-        entryStarted = False
-        entryString = ""
-        subtags = 0
-        colspan = 1
-        
-        # iterate through every character in html
-        for i in range(len(html)):
-
-            # if <td> or <th> tag has been opened but not closed
-            if foundEntry and not entryStarted:
-
-                # check for colspan parameter
-                if html[i:i+8] == "colspan=":
-                    colspan = int(html[i+10])
-
-                # check for closing of tag
-                if html[i] == ">":
-                    entryStarted = True
-                    continue
-
-            # if in text portion of entry
-            if entryStarted:
-
-                # check for closing tag
-                if html[i:i+4] == "</td" or html[i:i+4] == "</th":
-
-                    # populate table with entry
-                    entryLabel = tk.Label(frame, text=entryString, bg=colours[0])
-                    entryLabel.grid(row=row, column=subColumn, columnspan=colspan)
-                    subColumn += colspan
-                    colspan = 1
-
-                    # reset variables
-                    entryString = ""
-                    foundEntry = False
-                    entryStarted = False
-
-                    continue
-                
-                # if tag opened inside of text section (for example, <em>) TODO: sense and bold/italicise appropriately
-                if html[i] == "<":
-                    subtags += 1
-
-                # if tag inside of text section closed
-                if html[i] == ">":
-                    subtags -= 1
-                    continue
-
-                # add character to text string unless inside of extra tag
-                if subtags == 0:
-                    entryString = entryString + html[i]
-
-            # if new table row is created
-            if html[i:i+3] == "<tr":
-                subColumn = 0
+            if category.comment != "":
+                commentName = tk.Label(root, text=category.comment, bg=colours[0])
+                commentName.grid(row=row, column=0, columnspan=3)
                 row += 1
 
-            # if new data intry is found
-            if html[i:i+3] == "<td" or html[i:i+3] == "<th":
-                foundEntry = True
-        
-        column += 1
+            for assessment in category.assessments:
+                assessmentName = tk.Label(root, text=assessment.name, bg=colours[0])
+                assessmentName.grid(row=row, column=0)
+
+                assessmentDate = tk.Label(root, text=assessment.date, bg=colours[0])
+                assessmentDate.grid(row=row, column=1)
+
+                assessmentPercentage = tk.Label(root, text=assessment.percentage, bg=colours[0])
+                assessmentPercentage.grid(row=row, column=2)
+                row += 1
 
 
-    tk.mainloop()
+        tk.mainloop()
 
 if __name__ == "__main__":
     from webScraping import getHTML
-    from htmlParsing import getAssessmentTable
+    from htmlParsing import *
+    from classes import *
     
     # Pass default value of ENGEN101-24A for testing purposes
     html = getHTML("https://uow-func-net-currmngmt-offmngmt-aue-prod.azurewebsites.net/api/outline/view/ENGEN101-24A%20%28HAM%29")
-    table = getAssessmentTable(html)
+    tablehtml = getAssessmentTablehtml(html)
+    tableList = getAssessmentTableList(tablehtml)
+    newPaper = Paper("ENGEN101-24A", tableList)
 
-    drawAssessmentTable("colours.txt", [table])
+    drawAssessmentTable("colours.txt", [newPaper])
