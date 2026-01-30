@@ -9,10 +9,11 @@ def drawMainGUI(colourFile):
 
     # Callback function to extract text from entry boxes and close tk window
     def submit():
-        global returnValues
+        global returnValues, outputFileName
         for i in range(numFields):
             returnValues.append(linkVars[i].get())
 
+        outputFileName = fileNameVar.get()
         root.destroy()
     
     colours = extractColours(colourFile)
@@ -27,22 +28,31 @@ def drawMainGUI(colourFile):
 
     linkVars = []
     linkEntries = []
+    outputFileName = ""
 
     # Create variable number of text entry boxes
     for i in range(numFields):
 
-        linkVars.append(tk.StringVar(master=root, value=""))
+        linkVars.append(tk.StringVar(master=root, value="ENGEN101-24A"))
 
         linkEntries.append(tk.Entry(root, width=50, background=colours[1], textvariable=linkVars[i]))
         linkEntries[i].grid(row=i + 1)
 
+    fileNameLabel = tk.Label(root, text="File Name", padx=20, pady=20, background=colours[0], foreground=colours[4])
+    fileNameLabel.grid(row = 1 + numFields)
+
+    fileNameVar = tk.StringVar(master=root, value="GradeTracker")
+
+    fileNameEntry = tk.Entry(root, width=50, background=colours[1], textvariable=fileNameVar)
+    fileNameEntry.grid(row = 2 + numFields)
+
     # Create button to submit classnames and close window
     submitButton = tk.Button(root, text="Submit", width=42, bg=colours[2], command=submit)
-    submitButton.grid(row=1 + numFields)
+    submitButton.grid(row=3 + numFields)
 
     tk.mainloop()
 
-    return returnValues
+    return returnValues, outputFileName
 
 # Takes file of colour codes and extracts into a list
 def extractColours(colourFile):
@@ -58,6 +68,11 @@ def extractColours(colourFile):
 # Takes html of assessment table from course outline and puts it in a tkinter window
 def drawAssessmentTable(colourFile, papers):
 
+    print(len(papers))
+
+    def submit():
+        root.destroy()
+
     colours = extractColours(colourFile)
 
     for paper in papers:
@@ -71,10 +86,10 @@ def drawAssessmentTable(colourFile, papers):
 
 
         for category in paper.categories:
-            heading = tk.Label(root, text=category.name, bg=colours[0])
+            heading = tk.Label(root, text=category.name, bg=colours[0], font=("Helvetica", 10, "bold"))
             heading.grid(row=row, column=0)
 
-            percentage = tk.Label(root, text=category.percentage, bg=colours[0])
+            percentage = tk.Label(root, text=category.percentage, bg=colours[0], font=("Helvetica", 10, "bold"))
             percentage.grid(row = row, column=2)
             row += 1
 
@@ -94,6 +109,8 @@ def drawAssessmentTable(colourFile, papers):
                 assessmentPercentage.grid(row=row, column=2)
                 row += 1
 
+        submitButton = tk.Button(root, text="Submit", width=42, bg=colours[2], command=submit)
+        submitButton.grid(row=row, column=0, columnspan=3)
 
         tk.mainloop()
 

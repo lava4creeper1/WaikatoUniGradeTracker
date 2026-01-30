@@ -8,7 +8,7 @@ urlFormat = "https://uow-func-net-currmngmt-offmngmt-aue-prod.azurewebsites.net/
 
 
 # Get classname list in format ENGEN101-26A
-classNames = drawMainGUI(coloursFile)
+classNames, fileName = drawMainGUI(coloursFile)
 
 papers = []
 
@@ -30,6 +30,5 @@ for className in classNames:
 
 drawAssessmentTable(coloursFile, papers)
 
-# Create GUI displaying assessments table  
-# drawAssessmentTable(coloursFile, tableHTMLs)
+
 
