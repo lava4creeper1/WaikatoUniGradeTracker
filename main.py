@@ -2,6 +2,7 @@ from gui import *
 from webScraping import *
 from htmlParsing import *
 from classes import *
+from excel import *
 
 coloursFile = "colours.txt"
 urlFormat = "https://uow-func-net-currmngmt-offmngmt-aue-prod.azurewebsites.net/api/outline/view/{}%20%28HAM%29"
@@ -21,7 +22,7 @@ for className in classNames:
     # Get html of course outline in format of one list entry for one line
     html = getHTML(url)
 
-    # Get only portion of html with assessment table
+    # Get only portion of html with assessment table    
     tableHtml = getAssessmentTablehtml(html)
 
     tableList = getAssessmentTableList(tableHtml)
@@ -29,6 +30,8 @@ for className in classNames:
     papers.append(Paper(className, tableList))
 
 drawAssessmentTable(coloursFile, papers)
+
+createWorkbook(papers, fileName)
 
 
 

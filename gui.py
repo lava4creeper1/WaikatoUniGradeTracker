@@ -1,11 +1,15 @@
 import tkinter as tk
 
 returnValues = []
+outputFileName = ""
 numFields = 2
 
 # Draws main GUI for class submission page
 # returns string
 def drawMainGUI(colourFile):
+
+    linkVars = []
+    linkEntries = []
 
     # Callback function to extract text from entry boxes and close tk window
     def submit():
@@ -26,9 +30,6 @@ def drawMainGUI(colourFile):
     title = tk.Label(root, text="Enter a classname in the format 'ENGEN101-24A'", padx=20, pady=20, background=colours[0], foreground=colours[4])
     title.grid(row=0, column=0)
 
-    linkVars = []
-    linkEntries = []
-    outputFileName = ""
 
     # Create variable number of text entry boxes
     for i in range(numFields):
@@ -52,6 +53,8 @@ def drawMainGUI(colourFile):
 
     tk.mainloop()
 
+    print(outputFileName)
+
     return returnValues, outputFileName
 
 # Takes file of colour codes and extracts into a list
@@ -67,8 +70,6 @@ def extractColours(colourFile):
 
 # Takes html of assessment table from course outline and puts it in a tkinter window
 def drawAssessmentTable(colourFile, papers):
-
-    print(len(papers))
 
     def submit():
         root.destroy()
